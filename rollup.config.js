@@ -1,5 +1,4 @@
 import minify from 'rollup-plugin-minify-es';
-import minifyHTML from 'rollup-plugin-minify-html-literals';
 import resolve from 'rollup-plugin-node-resolve';
 import filesize from 'rollup-plugin-filesize';
 
@@ -10,7 +9,6 @@ function buildPlugins({dir=appDir, min=false}) {
   result.push(resolve());
 
   if (min) {
-    result.push(minifyHTML());
     result.push(minify({
       output: {
         wrap_iife: true

@@ -3,14 +3,12 @@ simple web map for our Borehole Geophysical Logs and Sediment Core data viewer.
 
 Web map is live here: https://wgnhs.github.io/data-pres-2018/
 
-
 ## Development
 This project requires [NodeJS 8+](https://nodejs.org/) installed on your development system. We recommend using the latest LTS version.
-Recommended workflow is 
+Recommended workflow is
 * fork the project to your personal github account
 * clone your personal repository (inherently naming the remote as `origin`)
 * set the canonical repository as the `upstream` remote: `git remote add upstream git@github.com:wgnhs/data-pres-2018.git`
-
 
 ### Setup
 ```
@@ -22,11 +20,10 @@ After cloning the repository, bring up a terminal in the repository's root direc
 ```
 npm start
 ```
-The `npm start` command is configured to build the project, then serve the project 
+The `npm start` command is configured to build the project, then serve the project
 at `http://localhost:8080/data-pres-2018/`
 
 The server will watch for source changes and automatically refresh the browser.
-
 
 ### Building
 ```
