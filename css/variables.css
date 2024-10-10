@@ -1,0 +1,65 @@
+html {
+    --uw-red: #c5050c; /* UW–Madison’s primary color. Used for design elements, navigation bars, nonlinked headers, and backgrounds. Not used for links. */
+    --uw-red-dark: #9b0000; /* Accent color. Used in alternating boxes component. */
+    --uw-page-bg: #f7f7f7; /* Background color. */
+    --uw-gray-blue: #dadfe1; /* Background and accent color. */
+    --uw-gray-darker: #646569; /* Design element background color and accent color. */
+    --uw-gray-darkest: #282728; /* Design element background color, accent color, and footer background color. Often used in place of black. */
+    --uw-body-font: #494949; /* Used for standard text on a white background. */
+    --uw-anchor-color: #0479a8; /* Used for links in standard text on a white background. */
+    --uw-gray-footer-text: #adadad; /* Used for footer text. */
+    --uw-gray-footer-text-hover: #f9f9f9; /* Used for links in footer text. */
+
+    --row-white: #f9f9f9;
+    --row-dark: #b5b5b5;
+    --row-light: #e5e5e5;
+    --row-accent: #777777;
+    --row-accent-transparent: #777777AA;
+    --row-900: #333333;
+    --row-black: #000000;
+    --row-blue: #2346b4;
+    --row-green: #33AA44;
+    --row-purple: purple;
+    --row-orange: orange;
+
+    --palette-white: var(--row-white);
+    --palette-dark: var(--row-dark);
+    --palette-light: var(--row-light);
+    --palette-accent: var(--row-accent);
+    --palette-accent-transparent: var(--row-accent-transparent);
+    --palette-900: var(--row-900);
+    --palette-black: var(--row-black);
+    --palette-blue: var(--row-blue);
+    --palette-green: var(--row-green);
+    --palette-purple: var(--row-purple);
+    --palette-orange: var(--row-orange);
+
+    --palette-active: var(--palette-orange);
+    --palette-brand: var(--uw-red-dark);
+    --brand-height: calc(2 * var(--font-size-title));
+
+    --map-symbol-0: var(--palette-blue);
+    --map-symbol-1: var(--palette-green);
+    --map-symbol-2: var(--palette-purple);
+    --map-symbol-active: var(--palette-orange);
+
+    --font-family: 'open_sansregular','Open Sans',sans_serif;
+    --font-size-small: 0.8rem;
+    --font-size: 16px;
+    --font-size-large: 1.2rem;
+    --font-size-extra-large: 1.4rem;
+    --font-size-title: 2rem;
+    --icon-size-small: 1.2rem;
+    --icon-size: 1.4rem;
+    --icon-size-large: 1.6rem;
+    --icon-size-extra-large: 1.8rem;
+    --font-weight: 400;
+    --font-weight-bold: 600;
+    --line-height: 1.5rem;
+    --box-shadow: inset 0px 0px 6px #888888;
+    --border-radius: 0.5rem;
+    --transition-duration: 0.3s;
+    --z-index-base: 0;
+    --z-index-interrupt: 2000;
+
+}

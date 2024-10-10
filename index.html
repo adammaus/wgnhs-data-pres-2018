@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WGNHS Data Viewer</title>
+  <base>
+
+  <script>
+    var modPath = location.pathname + '/';
+    var appBasePath = modPath.substring(0, modPath.indexOf('/', 1) + 1);
+    document.querySelector('base').setAttribute('href', appBasePath);
+    (function(){
+      var redirect = sessionStorage.redirect;
+      delete sessionStorage.redirect;
+      if (redirect && redirect != location.href) {
+        history.replaceState(null, null, redirect);
+      }
+      if (location.pathname.split('/').filter((el)=>''!==el).length < 1) {
+        history.replaceState(null, null, appBasePath);
+      }
+    })();
+  </script>
+
+  <!-- Load Web Component base -->
+  <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2.2.10/webcomponents-loader.js"></script>
+
+  <!-- Load Leaflet from a CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.5.1/dist/leaflet.css" />
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.5.1/dist/leaflet.js"></script>
+
+  <!-- Load Esri Leaflet from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/esri-leaflet@2.3.0/dist/esri-leaflet.js"></script>
+
+  <!-- load leaflet-basemaps from a CDN --> 
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-basemaps@0.3.4/L.Control.Basemaps.css" />
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-basemaps@0.3.4/L.Control.Basemaps-min.js"></script>
+
+  <!-- Load PDF viewer -->
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.2.228/build/pdf.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/common.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/router.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/layout.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/pdf.min.js"></script>
+
+  <!-- <script src="http://127.0.0.1:8081/wgnhs-elements/common.min.js"></script>
+  <script src="http://127.0.0.1:8081/wgnhs-elements/router.min.js"></script>
+  <script src="http://127.0.0.1:8081/wgnhs-elements/layout.min.js"></script>
+  <script src="http://127.0.0.1:8081/wgnhs-elements/pdf.min.js"></script> -->
+
+  <!-- <script src="https://unpkg.com/@uirouter/visualizer@4"></script> -->
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/css/reset.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/css/typography.css" />
+
+  <style>
+    @media (min-width: 770px) {
+      [data-view=app] {
+        display: grid;
+        grid-template: "head head" var(--brand-height) 
+                       "left right"
+                       / 1fr 1fr;
+      }
+      .left-panel {
+        overflow-y: auto;
+      }
+      @media (max-height: 719px) {
+        [data-view=app] {
+          display: grid;
+          grid-template: "left right"
+                        / 1fr 1fr;
+        }
+        .brand-header {
+          display: none;
+        }
+      }
+    }
+    @media (max-width: 769px) {
+      [data-view=app] {
+        display: grid;
+        grid-template: "right" 80vh
+                       "left" 1fr
+                       "head" var(--brand-height);
+        overflow-y: auto;
+      }
+    }
+    .brand-header {
+      grid-area: head;
+    }
+    .left-panel {
+      grid-area: left;
+    }
+    .right-panel {
+      grid-area: right;
+      display: flex;
+      justify-content: center;
+    }
+    .summary {
+      position: absolute;
+      bottom: 0;
+      max-width: 3rem;
+      max-height: 2rem;
+      transition: max-width var(--transition-duration, 0.3s) ease-out, max-height var(--transition-duration, 0.3s) ease-out;
+      z-index: var(--z-index-interrupt);
+      --el-header-padding: 0;
+      --el-header-font-size: var(--font-size);
+    }
+    .summary[open] {
+      max-width: 70%;
+      max-height: 35vh;
+      transition: max-width var(--transition-duration, 0.3s) ease-in, max-height var(--transition-duration, 0.3s) ease-in;
+    }
+    .summary i[slot="header"]::after {
+      content: "more_horiz";
+    }
+    .summary[open] i[slot="header"]::after {
+      content: "expand_more";
+    }
+
+    [data-view] {
+      height: 100%;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+    [data-view="spinner"] {
+      background-color: var(--palette-white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: var(--z-index-interrupt);
+    }
+    [data-closed] {
+      display: none;
+    }
+    .title {
+      text-align: center;
+      font-size: var(--font-size-title);
+      padding: var(--font-size-title) var(--font-size);
+    }
+    .subtitle {
+      text-align: center;
+      color: var(--palette-accent);
+    }
+    .inner-content h3 {
+      color: var(--palette-900);
+      padding: var(--font-size-large) 0 var(--border-radius);
+    }
+    .inner-content p {
+      margin: 0 var(--font-size-small);
+      font-size: var(--font-size-small);
+      line-height: var(--font-size);
+    }
+    .inner-content p+p {
+      margin-top: var(--font-size-small);
+    }
+    .inner-accent {
+      font-weight: var(--font-weight-bold);
+      color: var(--palette-900);
+    }
+    .inner-accent::after {
+      content: "";
+      padding-right: var(--border-radius);
+    }
+    .inner-footer {
+      text-align: center;
+      margin: var(--font-size-small);
+    }
+    .brand-header {
+      background-color: var(--palette-brand);
+      overflow: hidden;
+      color: var(--palette-white);
+      font-size: var(--font-size-title);
+    }
+    .brand-img {
+      height: var(--brand-height);
+      line-height: var(--brand-height);
+    }
+    .positioned {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    }
+
+    .collapse-icon::before {
+      content: "expand_more"
+    }
+    [open] > .collapse-icon::before {
+      content: "expand_less"
+    }
+  </style>
+</head>
+<body>
+  <div id="spinner" data-view="spinner">
+    <app-spinner></app-spinner>
+  </div>
+  <div id="app" data-view="app">
+    <header class="brand-header">
+      <a href="https://wgnhs.wisc.edu/">
+        <img class="brand-img" alt="Wisconsin Geological and Natural History Survey" src="css/wgnhs-long-reversed.png"></img>
+      </a>
+    </header>
+    <app-sidebar id="sidebar" class="left-panel" tabs='["details"]'>
+      <div class="default-view">
+        <h1 class="title">WGNHS Data Viewer</h1>
+        <h2 class="subtitle">Geoscience data from the Wisconsin Geological Survey</h2>
+        <div class="inner-content">
+          <p>
+            This interactive map shows locations of site data for our collections of 
+            geophysical logs and Quaternary core.
+          </p>
+          <p>
+            <span class="inner-accent">Using the map:</span> Click on a point for 
+            information about available data. To filter data, click on the data bars 
+            below. To learn more about the collections, click on the About bar.
+          </p>
+        </div>
+        <app-collapsible>
+          <i slot="header-before" class="material-icons collapse-icon"></i>
+          <span slot="header">About</span>
+          <div slot="content" class="inner-content">
+            <h3 class="inner-title">Geophysical logs</h3>
+            <p>
+              This application shows the locations of borehole geophysical log data 
+              and presents those logs in downloadable PDF and LAS formats.
+            </p>
+            <p>
+              The data viewer only includes digital log data collected after 1992.
+              Earlier logs have been archived and are available for historical purposes 
+              only.
+            </p>
+            <p>
+              <span class="inner-accent">What is a geophysical log?</span> Geophysical 
+              logs are created by lowering and raising a set of probes or instruments 
+              in a well or borehole. These probes record measurements of geology and 
+              groundwater such as electrical resistivity and potential, natural gamma 
+              radiation, fluid conductivity and temperature, and fluid flow rate. They 
+              also measure the diameter and shape of the borehole and can record digital 
+              or acoustic images of the rock.
+            </p>
+            <p>
+              <span class="inner-accent">Who uses them?</span> These logs are used by 
+              municipal water utility operators, geoscience researchers, and water-quality 
+              regulators to better understand the geologic setting and groundwater system.
+            </p>
+            <h3 class="inner-title">Quaternary core</h3>
+            <p>
+              Sediment core samples provide insight into the glacial history of Wisconsin, 
+              the distribution of surficial deposits used in sand and gravel mining, and 
+              the character of shallow unconfined aquifers.
+            </p>
+            <p>
+              This online collection includes locations of samples and types of data 
+              collected after 2011.
+            </p>
+          </div>
+        </app-collapsible>
+        <map-filter id="filter"></map-filter>
+        <div class="inner-content inner-footer">
+            <p>
+              Feedback, questions or accessibility issues: <a href="mailto:data@wgnhs.wisc.edu">data@wgnhs.wisc.edu</a>
+            </p>
+            <p>
+              <a href="https://www.wisc.edu/privacy-notice/" target="_blank">Privacy Notice</a>
+              | © 2019 The Board of Regents of the <a href="https://www.wisconsin.edu/">University of Wisconsin System</a>
+            </p>
+          </div>
+      </div>
+
+      <div slot="details">
+        <site-details></site-details>
+      </div>
+    </app-sidebar>
+    <div id="map" class="right-panel">
+      <app-collapsible class="summary" open>
+        <i slot="header" class="material-icons"></i>
+        <filter-summary slot="content"></filter-summary>
+      </app-collapsible>
+    </div>
+    <pdf-view-panel 
+      id="sketch" 
+      class="right-panel positioned"
+      data-closed></pdf-view-panel>
+  </div>
+  <script src="app/index.min.js"></script>
+</body>
+</html>
